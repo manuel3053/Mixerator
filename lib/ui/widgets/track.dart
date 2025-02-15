@@ -46,8 +46,7 @@ class _TrackState extends State<Track> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      widget.viewmodel.trackStatusController
-                          .switchTrackStatus();
+                      widget.viewmodel.switchTrackStatus();
                       // setState(() {});
                     },
                     icon: Icon(widget.viewmodel.iconData),

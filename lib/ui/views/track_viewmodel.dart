@@ -12,18 +12,34 @@ enum TimelineMode { global, local }
 
 enum TrackStatus { play, pause }
 
-class _TrackStatusController extends ChangeNotifier {
+class TrackViewmodel extends ChangeNotifier {
+  File? _track;
   final AudioPlayer _audioPlayer;
+  PlayMode _playMode;
+  TimelineMode _timelineMode;
   IconData _iconData;
   TrackStatus _trackStatus;
 
-  _TrackStatusController({required AudioPlayer audioPlayer})
-    : _audioPlayer = audioPlayer,
+  late Command0 selectFile;
+
+  TrackViewmodel({required File track})
+    : _audioPlayer = AudioPlayer(),
+      _playMode = PlayMode.auto,
       _iconData = Icons.bedtime_off_rounded,
       // _iconData = Icons.play_circle_outlined,
-      _trackStatus = TrackStatus.pause;
+      _trackStatus = TrackStatus.pause,
+      _timelineMode = TimelineMode.global {
+    selectFile = Command0(_selectFile);
+  }
 
+  // get trackStatusControllerListeners => _trackStatusController.hasListeners;
+  // get iconData => _trackStatusController.iconData;
   get iconData => _iconData;
+  get listeners => hasListeners;
+  // get trackStatusController => _trackStatusController;
+  get name => _track!.path.substring(_track!.path.lastIndexOf('/') + 1);
+  set playMode(PlayMode p) => _playMode = p;
+  set timelineMode(TimelineMode t) => _timelineMode = t;
 
   Future<void> switchTrackStatus() async {
     switch (_trackStatus) {
@@ -39,33 +55,6 @@ class _TrackStatusController extends ChangeNotifier {
         notifyListeners();
     }
   }
-}
-
-class TrackViewmodel extends ChangeNotifier {
-  File? _track;
-  final AudioPlayer _audioPlayer;
-  late _TrackStatusController _trackStatusController;
-  PlayMode _playMode;
-  TimelineMode _timelineMode;
-
-  late Command0 selectFile;
-
-  TrackViewmodel({required File track})
-    : _audioPlayer = AudioPlayer(),
-      _playMode = PlayMode.auto,
-      _timelineMode = TimelineMode.global {
-    _trackStatusController = _TrackStatusController(audioPlayer: _audioPlayer);
-    _trackStatusController.addListener(notifyListeners);
-    selectFile = Command0(_selectFile);
-  }
-
-  get trackStatusControllerListeners => _trackStatusController.hasListeners;
-  get iconData => _trackStatusController.iconData;
-  get listeners => hasListeners;
-  get trackStatusController => _trackStatusController;
-  get name => _track!.path.substring(_track!.path.lastIndexOf('/') + 1);
-  set playMode(PlayMode p) => _playMode = p;
-  set timelineMode(TimelineMode t) => _timelineMode = t;
 
   Future<Result> _selectFile() async {
     try {
