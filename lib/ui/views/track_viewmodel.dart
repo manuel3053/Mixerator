@@ -17,7 +17,6 @@ class TrackViewmodel extends ChangeNotifier {
   final AudioPlayer _audioPlayer;
   PlayMode _playMode;
   TimelineMode _timelineMode;
-  IconData _iconData;
   TrackStatus _trackStatus;
 
   late Command0 selectFile;
@@ -25,8 +24,6 @@ class TrackViewmodel extends ChangeNotifier {
   TrackViewmodel({required File track})
     : _audioPlayer = AudioPlayer(),
       _playMode = PlayMode.auto,
-      _iconData = Icons.bedtime_off_rounded,
-      // _iconData = Icons.play_circle_outlined,
       _trackStatus = TrackStatus.pause,
       _timelineMode = TimelineMode.global {
     selectFile = Command0(_selectFile);
@@ -34,7 +31,7 @@ class TrackViewmodel extends ChangeNotifier {
 
   // get trackStatusControllerListeners => _trackStatusController.hasListeners;
   // get iconData => _trackStatusController.iconData;
-  get iconData => _iconData;
+  get trackStatus => _trackStatus;
   get listeners => hasListeners;
   // get trackStatusController => _trackStatusController;
   get name => _track!.path.substring(_track!.path.lastIndexOf('/') + 1);
@@ -45,15 +42,13 @@ class TrackViewmodel extends ChangeNotifier {
     switch (_trackStatus) {
       case TrackStatus.play:
         _trackStatus = TrackStatus.pause;
-        _iconData = Icons.play_circle_outlined;
         await _audioPlayer.pause();
-        notifyListeners();
       case TrackStatus.pause:
         _trackStatus = TrackStatus.play;
-        _iconData = Icons.pause_circle_outlined;
         await _audioPlayer.play();
-        notifyListeners();
     }
+    // notifyListeners();
+    print(_trackStatus.toString());
   }
 
   Future<Result> _selectFile() async {

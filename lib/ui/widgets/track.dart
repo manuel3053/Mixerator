@@ -31,39 +31,47 @@ class _TrackState extends State<Track> {
         if (widget.viewmodel.selectFile.error) {
           return Center(child: Text("Goofy ass"));
         }
-        return Card(
-          color: Colors.blueGrey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(widget.viewmodel.name),
-              Text(widget.viewmodel.trackStatusControllerListeners.toString()),
-              Text(widget.viewmodel.listeners.toString()),
-              Row(
+        return ListenableBuilder(
+          listenable: widget.viewmodel.trackStatus,
+          builder: (context, _) {
+            return Card(
+              color: Colors.blueGrey,
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      widget.viewmodel.switchTrackStatus();
-                      // setState(() {});
-                    },
-                    icon: Icon(widget.viewmodel.iconData),
-                  ),
-                  Text("TIMELINE"),
-                  Column(
+                  Text(widget.viewmodel.name),
+                  Text(widget.viewmodel.trackStatus.toString()),
+                  Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Switch(value: true, onChanged: (b) {}),
-                      Switch(value: true, onChanged: (b) {}),
+                      IconButton(
+                        onPressed: () {
+                          widget.viewmodel.switchTrackStatus();
+                          setState(() {});
+                        },
+                        // icon: Icon(widget.viewmodel.iconData),
+                        icon:
+                            widget.viewmodel.trackStatus == TrackStatus.play
+                                ? Icon(Icons.fax_rounded)
+                                : Icon(Icons.calendar_view_day_sharp),
+                      ),
+                      Text("TIMELINE"),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Switch(value: true, onChanged: (b) {}),
+                          Switch(value: true, onChanged: (b) {}),
+                        ],
+                      ),
                     ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
