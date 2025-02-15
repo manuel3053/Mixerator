@@ -13,7 +13,7 @@ class _TrackState extends State<Track> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: widget.viewmodel,
+      listenable: widget.viewmodel.selectFile,
       builder: (context, _) {
         if (!widget.viewmodel.selectFile.completed &&
             !widget.viewmodel.selectFile.running &&
@@ -32,7 +32,7 @@ class _TrackState extends State<Track> {
           return Center(child: Text("Goofy ass"));
         }
         return ListenableBuilder(
-          listenable: widget.viewmodel.trackStatus,
+          listenable: widget.viewmodel,
           builder: (context, _) {
             return Card(
               color: Colors.blueGrey,
@@ -41,17 +41,14 @@ class _TrackState extends State<Track> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(widget.viewmodel.name),
-                  Text(widget.viewmodel.trackStatus.toString()),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
                         onPressed: () {
-                          widget.viewmodel.switchTrackStatus();
-                          setState(() {});
+                          widget.viewmodel.switchTrackStatus.executeAndReset();
                         },
-                        // icon: Icon(widget.viewmodel.iconData),
                         icon:
                             widget.viewmodel.trackStatus == TrackStatus.play
                                 ? Icon(Icons.fax_rounded)

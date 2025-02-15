@@ -52,7 +52,6 @@ abstract class Command<T> extends ChangeNotifier {
     if (_running) return;
 
     // Notify listeners.
-    // e.g. button shows loading state
     _running = true;
     _result = null;
     notifyListeners();
@@ -76,6 +75,11 @@ class Command0<T> extends Command<T> {
   /// Executes the action.
   Future<void> execute() async {
     await _execute(_action);
+  }
+
+  Future<void> executeAndReset() async {
+    await _execute(_action);
+    _result = null;
   }
 }
 

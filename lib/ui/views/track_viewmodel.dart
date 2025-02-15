@@ -20,6 +20,7 @@ class TrackViewmodel extends ChangeNotifier {
   TrackStatus _trackStatus;
 
   late Command0 selectFile;
+  late Command0 switchTrackStatus;
 
   TrackViewmodel({required File track})
     : _audioPlayer = AudioPlayer(),
@@ -27,28 +28,28 @@ class TrackViewmodel extends ChangeNotifier {
       _trackStatus = TrackStatus.pause,
       _timelineMode = TimelineMode.global {
     selectFile = Command0(_selectFile);
+    switchTrackStatus = Command0(_switchTrackStatus);
   }
 
-  // get trackStatusControllerListeners => _trackStatusController.hasListeners;
-  // get iconData => _trackStatusController.iconData;
   get trackStatus => _trackStatus;
-  get listeners => hasListeners;
-  // get trackStatusController => _trackStatusController;
   get name => _track!.path.substring(_track!.path.lastIndexOf('/') + 1);
   set playMode(PlayMode p) => _playMode = p;
   set timelineMode(TimelineMode t) => _timelineMode = t;
 
-  Future<void> switchTrackStatus() async {
-    switch (_trackStatus) {
-      case TrackStatus.play:
-        _trackStatus = TrackStatus.pause;
-        await _audioPlayer.pause();
-      case TrackStatus.pause:
-        _trackStatus = TrackStatus.play;
-        await _audioPlayer.play();
+  Future<Result> _switchTrackStatus() async {
+    try {
+      switch (_trackStatus) {
+        case TrackStatus.play:
+          _trackStatus = TrackStatus.pause;
+          _audioPlayer.pause();
+        case TrackStatus.pause:
+          _trackStatus = TrackStatus.play;
+          _audioPlayer.play();
+      }
+      return Result.ok(_trackStatus);
+    } finally {
+      notifyListeners();
     }
-    // notifyListeners();
-    print(_trackStatus.toString());
   }
 
   Future<Result> _selectFile() async {
