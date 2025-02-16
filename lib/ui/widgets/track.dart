@@ -62,7 +62,7 @@ class _TrackState extends State<Track> {
                                 children: [
                                   Slider(
                                     value: snapshot.data!,
-                                    max: widget.viewmodel.duration,
+                                    max: widget.viewmodel.duration + 1,
                                     onChanged: (value) {},
                                     onChangeEnd:
                                         (position) => widget.viewmodel.seek(
