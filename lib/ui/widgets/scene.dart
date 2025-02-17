@@ -16,6 +16,54 @@ class Scene extends StatefulWidget {
 class _SceneState extends State<Scene> {
   @override
   Widget build(BuildContext context) {
-    return Track(viewmodel: TrackViewmodel(track: File("")));
+    // return Track(viewmodel: TrackViewmodel());
+    return ListenableBuilder(
+      listenable: widget.viewmodel,
+      builder: (context, _) {
+        return Card(
+          color: Colors.blue,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    color: Colors.yellow,
+                    onPressed: () => widget.viewmodel.switchAutoTracks(),
+                    icon: Icon(Icons.play_circle_outlined),
+                  ),
+                  Text("Nome scena"),
+                  IconButton(
+                    color: Colors.yellow,
+                    onPressed: () => widget.viewmodel.addTrack(),
+                    icon: Icon(Icons.add_rounded),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    SliverList.builder(
+                      itemCount: widget.viewmodel.tracks.length,
+                      itemBuilder: (_, index) {
+                        return Dismissible(
+                          key: UniqueKey(),
+                          // key: ValueKey(index),
+                          onDismissed:
+                              (_) => widget.viewmodel.removeTrackAt(index),
+                          child: Track(
+                            viewmodel: widget.viewmodel.tracks.elementAt(index),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

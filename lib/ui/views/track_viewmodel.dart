@@ -13,26 +13,24 @@ enum TimelineMode { global, local }
 enum TrackStatus { play, pause }
 
 class TrackViewmodel extends ChangeNotifier {
-  File? _track;
+  late File? _track;
   final AudioPlayer _audioPlayer;
+  double _faderSpeed;
+  bool _isFaderActive;
   PlayMode _playMode;
   TimelineMode _timelineMode;
 
   late Command0 selectFile;
-  // late Command0 switchTrackStatus;
-  // late Command0 switchPlayMode;
-  // late Command0 switchTimelineMode;
-  // late Command0 switchLoopMode;
+  late Command0 fadeIn;
 
-  TrackViewmodel({required File track})
+  TrackViewmodel()
     : _audioPlayer = AudioPlayer(),
       _playMode = PlayMode.auto,
+      _faderSpeed = 1,
+      _isFaderActive = true,
       _timelineMode = TimelineMode.global {
     selectFile = Command0(_selectFile);
-    // switchTrackStatus = Command0(_switchTrackStatus);
-    // switchPlayMode = Command0(_switchPlayMode);
-    // switchTimelineMode = Command0(_switchTimelineMode);
-    // switchLoopMode = Command0(_switchLoopMode);
+    fadeIn = Command0(_fadeIn);
   }
 
   get name => _track!.path.substring(_track!.path.lastIndexOf('/') + 1);
@@ -45,14 +43,54 @@ class TrackViewmodel extends ChangeNotifier {
   // In questo momento gli switch non rispondono bene all'input perché non c'è notifyListeners, inoltre passare da bool ad enum è sempre dispendioso, trovare una soluzione
   get boolPlayMode => _playMode == PlayMode.auto ? true : false;
   get boolTimelineMode => _timelineMode == TimelineMode.global ? true : false;
+  get faderSpeed => _faderSpeed;
+  get isFaderActive => _isFaderActive;
 
   void seek(int position) {
     _audioPlayer.seek(Duration(seconds: position));
-    // notifyListeners();
+  }
+
+  Future<Result> _fadeIn() async {
+    // il rapporto ottimale tra il tempo e l'incremento sembra 0.001 : 1 = x : y
+    double endVolume = _audioPlayer.volume;
+    for (double i = 0.0; i <= endVolume; i += 0.001 ) {
+      _audioPlayer.setVolume(i);
+      await Future.delayed(Duration(microseconds: _faderSpeed.toInt()));
+      notifyListeners();
+      if (!_audioPlayer.playing) {
+        _audioPlayer.pause();
+        _audioPlayer.setVolume(endVolume);
+        break;
+      }
+    }
+    return Result.ok(endVolume);
+  }
+   
+  void setFaderSpeed(double speed) {
+    _faderSpeed = speed;
+    notifyListeners();
+  }
+
+  void switchTrackStatus() {
+    if (_audioPlayer.playing) {
+      _audioPlayer.pause();
+    }
+    else {
+      _audioPlayer.play();
+      if (_isFaderActive) {
+        fadeIn.execute();
+      }
+    }
+    notifyListeners();
   }
 
   void setVolume(double volume) {
     _audioPlayer.setVolume(volume);
+    notifyListeners();
+  }
+
+  void switchFader() {
+    _isFaderActive = !_isFaderActive;
     notifyListeners();
   }
 
@@ -86,10 +124,6 @@ class TrackViewmodel extends ChangeNotifier {
       notifyListeners();
   }
 
-  void switchTrackStatus() {
-      _audioPlayer.playing ? _audioPlayer.pause() : _audioPlayer.play();
-      notifyListeners();
-  }
 
   Future<Result> _selectFile() async {
     try {
