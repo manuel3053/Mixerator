@@ -159,8 +159,8 @@ class _TrackState extends State<Track> {
                         widget.viewmodel.isFaderActive
                             ? Expanded(
                               child: Slider(
-                                min: 1,
-                                max: 10000,
+                                min: 0.0,
+                                max: 20.0,
                                 value: widget.viewmodel.faderSpeed,
                                 onChanged:
                                     (value) =>

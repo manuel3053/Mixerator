@@ -48,6 +48,7 @@ class TrackViewmodel extends ChangeNotifier {
 
   void seek(int position) {
     _audioPlayer.seek(Duration(seconds: position));
+    notifyListeners();
   }
 
   Future<Result> _fadeIn() async {
@@ -71,12 +72,31 @@ class TrackViewmodel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void switchTrackStatus() {
+  void switchTrackStatus() async {
     if (_audioPlayer.playing) {
       _audioPlayer.pause();
     }
     else {
-      _audioPlayer.play();
+      // if (_isFaderActive && _audioPlayer.position.inSeconds.toDouble() < _faderSpeed) {
+      //   double endVolume = _audioPlayer.volume;
+      //   double volume = 0.0;
+      //   // double increment = 0.001;
+      //   double increment = endVolume / ((_faderSpeed - _audioPlayer.position.inSeconds.toDouble()) * 100);
+      //   print("Increment");
+      //   print(increment);
+      //   _audioPlayer.play();
+      //   while (_audioPlayer.position.inSeconds.toDouble() < _faderSpeed && volume < endVolume) {
+      //     _audioPlayer.setVolume(volume);
+      //     await Future.delayed(Duration(microseconds: 1));
+      //     notifyListeners();
+      //     volume += increment;
+      //   }
+      // }
+      // else {
+      //   _audioPlayer.play();
+      // }
+      // double endVolume = _audioPlayer.volume;
+        _audioPlayer.play();
       if (_isFaderActive) {
         fadeIn.execute();
       }
