@@ -152,22 +152,32 @@ class _TrackState extends State<Track> {
                             // onChanged: (value) => widget.viewmodel.volume = value,
                           ),
                         ),
-                        IconButton(
-                          onPressed: () => widget.viewmodel.switchFader(),
-                          icon: Icon(Icons.double_arrow_sharp),
-                        ),
-                        widget.viewmodel.isFaderActive
-                            ? Expanded(
-                              child: Slider(
-                                min: 0.0,
-                                max: 20.0,
-                                value: widget.viewmodel.faderSpeed,
-                                onChanged:
-                                    (value) =>
-                                        widget.viewmodel.setFaderSpeed(value),
+                        Expanded(
+                          child: SegmentedButton(
+                            emptySelectionAllowed: true,
+                            multiSelectionEnabled: true,
+                            segments: <ButtonSegment<Faders>>[
+                              ButtonSegment<Faders>(
+                                value: Faders.start,
+                                label: Text(
+                                  "Fade IN",
+                                  textScaler: TextScaler.linear(0.3),
+                                ),
                               ),
-                            )
-                            : Expanded(child: Text("No fader")),
+                              ButtonSegment<Faders>(
+                                value: Faders.end,
+                                label: Text(
+                                  "Fade OUT",
+                                  textScaler: TextScaler.linear(0.3),
+                                ),
+                              ),
+                            ],
+                            // selected: widget.viewmodel.faders,
+                            selected: widget.viewmodel.faders,
+                            onSelectionChanged:
+                                (values) => widget.viewmodel.setFaders(values),
+                          ),
+                        ),
                       ],
                     ),
                   ],

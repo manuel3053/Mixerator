@@ -8,6 +8,8 @@ import 'package:mixerator/utils/result.dart';
 
 enum PlayMode { auto, manual }
 
+enum Faders { start, end }
+
 enum TimelineMode { global, local }
 
 enum TrackStatus { play, pause }
@@ -17,6 +19,7 @@ class TrackViewmodel extends ChangeNotifier {
   final AudioPlayer _audioPlayer;
   double _faderSpeed;
   bool _isFaderActive;
+  final Set<Faders> _faders = {};
   PlayMode _playMode;
   TimelineMode _timelineMode;
 
@@ -39,6 +42,7 @@ class TrackViewmodel extends ChangeNotifier {
   get position => _audioPlayer.position.inSeconds.toDouble();
   get duration => _audioPlayer.duration!.inSeconds.toDouble();
   get positionStream => _audioPlayer.positionStream.map((pos) => pos.inSeconds.toDouble());
+  get faders => _faders;
   double get volume => _audioPlayer.volume;
   // In questo momento gli switch non rispondono bene all'input perché non c'è notifyListeners, inoltre passare da bool ad enum è sempre dispendioso, trovare una soluzione
   get boolPlayMode => _playMode == PlayMode.auto ? true : false;
@@ -48,6 +52,12 @@ class TrackViewmodel extends ChangeNotifier {
 
   void seek(int position) {
     _audioPlayer.seek(Duration(seconds: position));
+    notifyListeners();
+  }
+
+  void setFaders(Set<Faders> f) {
+    _faders.clear();
+    _faders.addAll(f);
     notifyListeners();
   }
 
