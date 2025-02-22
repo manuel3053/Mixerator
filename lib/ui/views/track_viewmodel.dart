@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:mixerator/ui/views/fader_strategy.dart';
 import 'package:mixerator/utils/command.dart';
 import 'package:mixerator/utils/result.dart';
 
@@ -17,22 +18,21 @@ enum TrackStatus { play, pause }
 class TrackViewmodel extends ChangeNotifier {
   late File? _track;
   final AudioPlayer _audioPlayer;
-  final Set<Faders> _faders = {};
-  double _faderVolume;
+  final Set<Faders> _faders = {Faders.start, Faders.end};
   PlayMode _playMode;
   TimelineMode _timelineMode;
+  FaderStrategyContext _faderStrategyContext;
 
   late Command0 selectFile;
-  late Command0 fadeIn;
 
   TrackViewmodel()
     : _audioPlayer = AudioPlayer(),
       _playMode = PlayMode.auto,
-      _faderVolume = 1.0,
+      _faderStrategyContext = FaderStrategyContext(),
       _timelineMode = TimelineMode.global {
     selectFile = Command0(_selectFile);
-    fadeIn = Command0(_fadeIn);
-    _fade();
+    // _fade();
+    _faderStrategyContext.executeFaderStrategy(_audioPlayer, setVolume);
   }
 
   get name => _track!.path.substring(_track!.path.lastIndexOf('/') + 1);
@@ -53,33 +53,20 @@ class TrackViewmodel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setFaders(Set<Faders> f) {
+  void setFaders(Set<Faders> faders) {
     _faders.clear();
-    _faders.addAll(f);
-    notifyListeners();
-  }
-
-  Future<Result> _fadeIn() async {
-    // il rapporto ottimale tra il tempo e l'incremento sembra 0.001 : 1 = x : y
-    double endVolume = _audioPlayer.volume;
-    for (double i = 0.0; i <= endVolume; i += 0.001) {
-      _audioPlayer.setVolume(i);
-      await Future.delayed(Duration(microseconds: 1));
-      notifyListeners();
+    _faders.addAll(faders);
+    if (faders.contains(Faders.start) && faders.contains(Faders.end)) {
+      _faderStrategyContext.setFaderStrategy(FadeInOut());
+    } else if (faders.contains(Faders.start) && !faders.contains(Faders.end)) {
+      _faderStrategyContext.setFaderStrategy(FadeIn());
+    } else if (!faders.contains(Faders.start) && faders.contains(Faders.end)) {
+      _faderStrategyContext.setFaderStrategy(FadeOut());
+    } else {
+      _faderStrategyContext.setFaderStrategy(NoFade());
     }
-    return Result.ok(endVolume);
-  }
 
-  void setFaderVolume(double v) {
-    _audioPlayer.setVolume(v);
     notifyListeners();
-  }
-
-  void _fade() async {
-    _audioPlayer.positionStream
-        .where((time) => time.inMicroseconds < 7000000)
-        .map((time) => 1.0 * (time.inMicroseconds / 7000000))
-        .listen(setFaderVolume);
   }
 
   void switchTrackStatus() async {
