@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:mixerator/ui/views/scene_viewmodel.dart';
-import 'package:mixerator/ui/views/track_viewmodel.dart';
 import 'package:mixerator/ui/widgets/track.dart';
 
 class Scene extends StatefulWidget {
@@ -21,18 +18,18 @@ class _SceneState extends State<Scene> {
       listenable: widget.viewmodel,
       builder: (context, _) {
         return Card(
-          color: Colors.blue,
+          color: Colors.black54,
           child: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton(
-                    color: Colors.yellow,
-                    onPressed: () => widget.viewmodel.switchAutoTracks(),
-                    icon: Icon(Icons.play_circle_outlined),
-                  ),
-                  Text("Nome scena"),
+                  // IconButton(
+                  //   color: Colors.yellow,
+                  //   onPressed: () => widget.viewmodel.switchAutoTracks(),
+                  //   icon: Icon(Icons.play_circle_outlined),
+                  // ),
+                  Text("placeholder"),
                   IconButton(
                     color: Colors.yellow,
                     onPressed: () => widget.viewmodel.addTrack(),

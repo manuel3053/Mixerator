@@ -1,60 +1,63 @@
 import 'package:just_audio/just_audio.dart';
+import 'package:async/async.dart';
 
 class FaderStrategyContext {
-  FaderStrategy _faderStrategy;
+  late FaderStrategy _faderStrategy;
 
-  FaderStrategyContext() : _faderStrategy = NoFade();
+  FaderStrategyContext() : _faderStrategy = FadeInOut();
 
   void setFaderStrategy(FaderStrategy faderStrategy) {
     _faderStrategy = faderStrategy;
   }
 
-  void executeFaderStrategy(
+  Stream<double> executeFaderStrategy(
     AudioPlayer audioPlayer,
     Function(double) callback,
   ) {
-    _faderStrategy.execute(audioPlayer, callback);
+    return _faderStrategy.execute(audioPlayer, callback);
   }
 }
 
 abstract class FaderStrategy {
-  void execute(AudioPlayer audioPlayer, Function(double) callback);
+  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback);
 }
 
 class FadeIn implements FaderStrategy {
   @override
-  void execute(AudioPlayer audioPlayer, Function(double) callback) async {
+  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback) {
     int fadeInEnd = 7000000;
 
     // FADE IN
-    audioPlayer.positionStream
+    Stream<double> fadeIn = audioPlayer.positionStream
         .where((time) => (time.inMicroseconds < fadeInEnd))
-        .map((time) => 1.0 * (time.inMicroseconds / fadeInEnd))
-        .listen(callback);
+        .map((time) => 1.0 * (time.inMicroseconds / fadeInEnd));
 
-    // COSTANT VOLUME
-    audioPlayer.positionStream
+    // CONSTANT VOLUME
+    Stream<double> constant = audioPlayer.positionStream
         .where((time) => (time.inMicroseconds >= fadeInEnd))
-        .map((time) => 1.0)
-        .listen(callback);
+        .map((time) => 1.0);
+
+    Stream<double> stream = StreamGroup.merge([fadeIn, constant]);
+
+    stream.listen(callback);
+
+    return stream;
   }
 }
 
 class FadeOut implements FaderStrategy {
   @override
-  void execute(AudioPlayer audioPlayer, Function(double) callback) async {
-    Duration trackDuration =
-        await audioPlayer.durationStream.first ?? Duration(microseconds: 0);
+  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback) {
+    Duration trackDuration = audioPlayer.duration ?? Duration(microseconds: 0);
     int trackLength = trackDuration.inMicroseconds;
     int fadeOutStart = 7000000;
-    // COSTANT VOLUME
-    audioPlayer.positionStream
+    // CONSTANT VOLUME
+    Stream<double> constant = audioPlayer.positionStream
         .where((time) => (time.inMicroseconds <= fadeOutStart))
-        .map((time) => 1.0)
-        .listen(callback);
+        .map((time) => 1.0);
 
     // FADE OUT
-    audioPlayer.positionStream
+    Stream<double> fadeOut = audioPlayer.positionStream
         .where((time) => (time.inMicroseconds > fadeOutStart))
         .map(
           (time) =>
@@ -63,39 +66,40 @@ class FadeOut implements FaderStrategy {
                   ((time.inMicroseconds - fadeOutStart) /
                       (trackLength - fadeOutStart))),
         )
-        .where((vol) => vol >= 0.0)
-        .listen(callback);
+        .where((vol) => vol >= 0.0);
+
+    Stream<double> stream = StreamGroup.merge([constant, fadeOut]);
+
+    stream.listen(callback);
+
+    return stream;
   }
 }
 
 class FadeInOut implements FaderStrategy {
   @override
-  void execute(AudioPlayer audioPlayer, Function(double) callback) async {
-    // formulare una formula matematica che sia in grado di funzionare sia per fade in che per fade out, sfruttando soltanto la variazione del tempo
+  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback) {
     int fadeInEnd = 7000000;
-    Duration trackDuration =
-        await audioPlayer.durationStream.first ?? Duration(microseconds: 0);
+    Duration trackDuration = audioPlayer.duration ?? Duration(microseconds: 0);
     int trackLength = trackDuration.inMicroseconds;
     int fadeOutStart = trackLength - 7000000;
 
     // FADE IN
-    audioPlayer.positionStream
+    Stream<double> fadeIn = audioPlayer.positionStream
         .where((time) => (time.inMicroseconds < fadeInEnd))
-        .map((time) => 1.0 * (time.inMicroseconds / fadeInEnd))
-        .listen(callback);
+        .map((time) => 1.0 * (time.inMicroseconds / fadeInEnd));
 
-    // COSTANT VOLUME
-    audioPlayer.positionStream
+    // CONSTANT VOLUME
+    Stream<double> constant = audioPlayer.positionStream
         .where(
           (time) =>
               (time.inMicroseconds >= fadeInEnd &&
                   time.inMicroseconds <= fadeOutStart),
         )
-        .map((time) => 1.0)
-        .listen(callback);
+        .map((time) => 1.0);
 
     // FADE OUT
-    audioPlayer.positionStream
+    Stream<double> fadeOut = audioPlayer.positionStream
         .where((time) => (time.inMicroseconds > fadeOutStart))
         .map(
           (time) =>
@@ -104,15 +108,23 @@ class FadeInOut implements FaderStrategy {
                   ((time.inMicroseconds - fadeOutStart) /
                       (trackLength - fadeOutStart))),
         )
-        .where((vol) => vol >= 0.0)
-        .listen(callback);
+        .where((vol) => vol >= 0.0);
+
+    Stream<double> tmp = StreamGroup.merge([fadeIn, constant]);
+    Stream<double> stream = StreamGroup.merge([tmp, fadeOut]);
+
+    stream.listen(callback);
+
+    return stream;
   }
 }
 
 class NoFade implements FaderStrategy {
   @override
-  void execute(AudioPlayer audioPlayer, Function(double) callback) async {
-    // COSTANT VOLUME
-    audioPlayer.positionStream.map((time) => 1.0).listen(callback);
+  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback) {
+    // CONSTANT VOLUME
+    Stream<double> constant = audioPlayer.positionStream.map((time) => 1.0);
+    constant.listen(callback);
+    return constant;
   }
 }

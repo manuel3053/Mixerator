@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -18,10 +19,11 @@ enum TrackStatus { play, pause }
 class TrackViewmodel extends ChangeNotifier {
   late File? _track;
   final AudioPlayer _audioPlayer;
+  final FaderStrategyContext _faderStrategyContext;
+  final StreamController _streamController;
   final Set<Faders> _faders = {Faders.start, Faders.end};
   PlayMode _playMode;
   TimelineMode _timelineMode;
-  FaderStrategyContext _faderStrategyContext;
 
   late Command0 selectFile;
 
@@ -29,10 +31,10 @@ class TrackViewmodel extends ChangeNotifier {
     : _audioPlayer = AudioPlayer(),
       _playMode = PlayMode.auto,
       _faderStrategyContext = FaderStrategyContext(),
+      _streamController = StreamController(),
       _timelineMode = TimelineMode.global {
     selectFile = Command0(_selectFile);
     // _fade();
-    _faderStrategyContext.executeFaderStrategy(_audioPlayer, setVolume);
   }
 
   get name => _track!.path.substring(_track!.path.lastIndexOf('/') + 1);
@@ -58,12 +60,16 @@ class TrackViewmodel extends ChangeNotifier {
     _faders.addAll(faders);
     if (faders.contains(Faders.start) && faders.contains(Faders.end)) {
       _faderStrategyContext.setFaderStrategy(FadeInOut());
+      _streamController.close();
     } else if (faders.contains(Faders.start) && !faders.contains(Faders.end)) {
       _faderStrategyContext.setFaderStrategy(FadeIn());
+      _streamController.close();
     } else if (!faders.contains(Faders.start) && faders.contains(Faders.end)) {
       _faderStrategyContext.setFaderStrategy(FadeOut());
+      _streamController.close();
     } else {
       _faderStrategyContext.setFaderStrategy(NoFade());
+      _streamController.close();
     }
 
     notifyListeners();
@@ -74,6 +80,11 @@ class TrackViewmodel extends ChangeNotifier {
       _audioPlayer.pause();
     } else {
       _audioPlayer.play();
+      if (!_streamController.hasListener) {
+        _streamController.addStream(
+          _faderStrategyContext.executeFaderStrategy(_audioPlayer, setVolume),
+        );
+      }
     }
     notifyListeners();
   }

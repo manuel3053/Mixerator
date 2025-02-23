@@ -14,6 +14,7 @@ class _TrackState extends State<Track> {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.white30,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListenableBuilder(
@@ -47,28 +48,28 @@ class _TrackState extends State<Track> {
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        Switch(
-                          value: widget.viewmodel.boolPlayMode,
-                          onChanged: (b) => widget.viewmodel.switchPlayMode(),
-                          thumbIcon: WidgetStateProperty<Icon>.fromMap(
-                            <WidgetStatesConstraint, Icon>{
-                              WidgetState.selected: Icon(Icons.auto_mode),
-                              WidgetState.any: Icon(Icons.close),
-                            },
-                          ),
-                        ),
-                        Switch(
-                          value: widget.viewmodel.boolTimelineMode,
-                          onChanged:
-                              (b) => widget.viewmodel.switchTimelineMode(),
-                          // (b) => widget.viewmodel.switchTimelineMode.executeAndReset(),
-                          thumbIcon: WidgetStateProperty<Icon>.fromMap(
-                            <WidgetStatesConstraint, Icon>{
-                              WidgetState.selected: Icon(Icons.one_k),
-                              WidgetState.any: Icon(Icons.close),
-                            },
-                          ),
-                        ),
+                        // Switch(
+                        //   value: widget.viewmodel.boolPlayMode,
+                        //   onChanged: (b) => widget.viewmodel.switchPlayMode(),
+                        //   thumbIcon: WidgetStateProperty<Icon>.fromMap(
+                        //     <WidgetStatesConstraint, Icon>{
+                        //       WidgetState.selected: Icon(Icons.auto_mode),
+                        //       WidgetState.any: Icon(Icons.close),
+                        //     },
+                        //   ),
+                        // ),
+                        // Switch(
+                        //   value: widget.viewmodel.boolTimelineMode,
+                        //   onChanged:
+                        //       (b) => widget.viewmodel.switchTimelineMode(),
+                        //   // (b) => widget.viewmodel.switchTimelineMode.executeAndReset(),
+                        //   thumbIcon: WidgetStateProperty<Icon>.fromMap(
+                        //     <WidgetStatesConstraint, Icon>{
+                        //       WidgetState.selected: Icon(Icons.one_k),
+                        //       WidgetState.any: Icon(Icons.close),
+                        //     },
+                        //   ),
+                        // ),
                       ],
                     ),
                     Row(
