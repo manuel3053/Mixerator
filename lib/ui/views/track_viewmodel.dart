@@ -20,7 +20,8 @@ class TrackViewmodel extends ChangeNotifier {
   late File? _track;
   final AudioPlayer _audioPlayer;
   final FaderStrategyContext _faderStrategyContext;
-  final StreamController _streamController;
+  StreamController _faderStreamController;
+  late StreamSubscription _faderStreamSubscription;
   final Set<Faders> _faders = {Faders.start, Faders.end};
   PlayMode _playMode;
   TimelineMode _timelineMode;
@@ -31,7 +32,7 @@ class TrackViewmodel extends ChangeNotifier {
     : _audioPlayer = AudioPlayer(),
       _playMode = PlayMode.auto,
       _faderStrategyContext = FaderStrategyContext(),
-      _streamController = StreamController(),
+      _faderStreamController = StreamController(),
       _timelineMode = TimelineMode.global {
     selectFile = Command0(_selectFile);
     // _fade();
@@ -60,17 +61,22 @@ class TrackViewmodel extends ChangeNotifier {
     _faders.addAll(faders);
     if (faders.contains(Faders.start) && faders.contains(Faders.end)) {
       _faderStrategyContext.setFaderStrategy(FadeInOut());
-      _streamController.close();
     } else if (faders.contains(Faders.start) && !faders.contains(Faders.end)) {
       _faderStrategyContext.setFaderStrategy(FadeIn());
-      _streamController.close();
     } else if (!faders.contains(Faders.start) && faders.contains(Faders.end)) {
       _faderStrategyContext.setFaderStrategy(FadeOut());
-      _streamController.close();
     } else {
       _faderStrategyContext.setFaderStrategy(NoFade());
-      _streamController.close();
     }
+    _faderStreamSubscription.cancel();
+    _faderStreamController.close();
+    _faderStreamController = StreamController();
+    _faderStreamController.addStream(
+      _faderStrategyContext.executeFaderStrategy(_audioPlayer),
+    );
+    _faderStreamSubscription = _faderStreamController.stream.listen(
+      (vol) => setVolume(vol),
+    );
 
     notifyListeners();
   }
@@ -80,9 +86,12 @@ class TrackViewmodel extends ChangeNotifier {
       _audioPlayer.pause();
     } else {
       _audioPlayer.play();
-      if (!_streamController.hasListener) {
-        _streamController.addStream(
-          _faderStrategyContext.executeFaderStrategy(_audioPlayer, setVolume),
+      if (!_faderStreamController.hasListener) {
+        _faderStreamController.addStream(
+          _faderStrategyContext.executeFaderStrategy(_audioPlayer),
+        );
+        _faderStreamSubscription = _faderStreamController.stream.listen(
+          (vol) => setVolume(vol),
         );
       }
     }

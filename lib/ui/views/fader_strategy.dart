@@ -10,21 +10,18 @@ class FaderStrategyContext {
     _faderStrategy = faderStrategy;
   }
 
-  Stream<double> executeFaderStrategy(
-    AudioPlayer audioPlayer,
-    Function(double) callback,
-  ) {
-    return _faderStrategy.execute(audioPlayer, callback);
+  Stream<double> executeFaderStrategy(AudioPlayer audioPlayer) {
+    return _faderStrategy.execute(audioPlayer);
   }
 }
 
 abstract class FaderStrategy {
-  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback);
+  Stream<double> execute(AudioPlayer audioPlayer);
 }
 
 class FadeIn implements FaderStrategy {
   @override
-  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback) {
+  Stream<double> execute(AudioPlayer audioPlayer) {
     int fadeInEnd = 7000000;
 
     // FADE IN
@@ -39,15 +36,13 @@ class FadeIn implements FaderStrategy {
 
     Stream<double> stream = StreamGroup.merge([fadeIn, constant]);
 
-    stream.listen(callback);
-
     return stream;
   }
 }
 
 class FadeOut implements FaderStrategy {
   @override
-  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback) {
+  Stream<double> execute(AudioPlayer audioPlayer) {
     Duration trackDuration = audioPlayer.duration ?? Duration(microseconds: 0);
     int trackLength = trackDuration.inMicroseconds;
     int fadeOutStart = 7000000;
@@ -70,15 +65,13 @@ class FadeOut implements FaderStrategy {
 
     Stream<double> stream = StreamGroup.merge([constant, fadeOut]);
 
-    stream.listen(callback);
-
     return stream;
   }
 }
 
 class FadeInOut implements FaderStrategy {
   @override
-  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback) {
+  Stream<double> execute(AudioPlayer audioPlayer) {
     int fadeInEnd = 7000000;
     Duration trackDuration = audioPlayer.duration ?? Duration(microseconds: 0);
     int trackLength = trackDuration.inMicroseconds;
@@ -113,18 +106,15 @@ class FadeInOut implements FaderStrategy {
     Stream<double> tmp = StreamGroup.merge([fadeIn, constant]);
     Stream<double> stream = StreamGroup.merge([tmp, fadeOut]);
 
-    stream.listen(callback);
-
     return stream;
   }
 }
 
 class NoFade implements FaderStrategy {
   @override
-  Stream<double> execute(AudioPlayer audioPlayer, Function(double) callback) {
+  Stream<double> execute(AudioPlayer audioPlayer) {
     // CONSTANT VOLUME
     Stream<double> constant = audioPlayer.positionStream.map((time) => 1.0);
-    constant.listen(callback);
     return constant;
   }
 }
