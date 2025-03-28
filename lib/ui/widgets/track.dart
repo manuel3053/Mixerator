@@ -149,7 +149,8 @@ class _TrackState extends State<Track> {
                           child: Slider(
                             value: widget.viewmodel.volume,
                             onChanged:
-                                (volume) => widget.viewmodel.setVolume(volume),
+                                (volume) =>
+                                    widget.viewmodel.setTargetVolume(volume),
                             // onChanged: (value) => widget.viewmodel.volume = value,
                           ),
                         ),
@@ -173,7 +174,6 @@ class _TrackState extends State<Track> {
                                 ),
                               ),
                             ],
-                            // selected: widget.viewmodel.faders,
                             selected: widget.viewmodel.faders,
                             onSelectionChanged:
                                 (values) => widget.viewmodel.setFaders(values),

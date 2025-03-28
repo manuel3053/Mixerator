@@ -35,6 +35,7 @@ class TrackViewmodel extends ChangeNotifier {
       _faderStreamController = StreamController(),
       _timelineMode = TimelineMode.global {
     selectFile = Command0(_selectFile);
+    _faderStrategyContext.setTargetVolume(1.0);
     // _fade();
   }
 
@@ -100,6 +101,12 @@ class TrackViewmodel extends ChangeNotifier {
 
   void setVolume(double volume) {
     _audioPlayer.setVolume(volume);
+    notifyListeners();
+  }
+
+  void setTargetVolume(double volume) {
+    // _audioPlayer.setVolume(volume);
+    _faderStrategyContext.setTargetVolume(volume);
     notifyListeners();
   }
 
