@@ -11,10 +11,15 @@ class Track extends StatefulWidget {
 }
 
 class _TrackState extends State<Track> {
+  String secondsToTimeFormat(double totalSeconds) {
+    int minutes = totalSeconds ~/ 60;
+    int seconds = (totalSeconds % 60).toInt();
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.white30,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListenableBuilder(
@@ -46,30 +51,9 @@ class _TrackState extends State<Track> {
                             widget.viewmodel.name,
                             overflow: TextOverflow.fade,
                             textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.w700),
                           ),
                         ),
-                        // Switch(
-                        //   value: widget.viewmodel.boolPlayMode,
-                        //   onChanged: (b) => widget.viewmodel.switchPlayMode(),
-                        //   thumbIcon: WidgetStateProperty<Icon>.fromMap(
-                        //     <WidgetStatesConstraint, Icon>{
-                        //       WidgetState.selected: Icon(Icons.auto_mode),
-                        //       WidgetState.any: Icon(Icons.close),
-                        //     },
-                        //   ),
-                        // ),
-                        // Switch(
-                        //   value: widget.viewmodel.boolTimelineMode,
-                        //   onChanged:
-                        //       (b) => widget.viewmodel.switchTimelineMode(),
-                        //   // (b) => widget.viewmodel.switchTimelineMode.executeAndReset(),
-                        //   thumbIcon: WidgetStateProperty<Icon>.fromMap(
-                        //     <WidgetStatesConstraint, Icon>{
-                        //       WidgetState.selected: Icon(Icons.one_k),
-                        //       WidgetState.any: Icon(Icons.close),
-                        //     },
-                        //   ),
-                        // ),
                       ],
                     ),
                     Row(
@@ -78,10 +62,9 @@ class _TrackState extends State<Track> {
                       children: [
                         IconButton(
                           onPressed: () => widget.viewmodel.switchTrackStatus(),
-                          icon:
-                              widget.viewmodel.playing
-                                  ? Icon(Icons.pause_circle_outlined)
-                                  : Icon(Icons.play_circle_outlined),
+                          icon: widget.viewmodel.playing
+                              ? Icon(Icons.pause)
+                              : Icon(Icons.play_arrow),
                         ),
                         Expanded(
                           child: StreamBuilder(
@@ -94,18 +77,21 @@ class _TrackState extends State<Track> {
                                       value: snapshot.data!,
                                       max: widget.viewmodel.duration + 1,
                                       onChanged: (value) {},
-                                      onChangeEnd:
-                                          (position) => widget.viewmodel.seek(
-                                            position.toInt(),
-                                          ),
+                                      onChangeEnd: (position) => widget
+                                          .viewmodel
+                                          .seek(position.toInt()),
                                     ),
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(snapshot.data!.toString()),
                                         Text(
-                                          widget.viewmodel.duration.toString(),
+                                          secondsToTimeFormat(snapshot.data!),
+                                        ),
+                                        Text(
+                                          secondsToTimeFormat(
+                                            widget.viewmodel.duration,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -117,13 +103,12 @@ class _TrackState extends State<Track> {
                           ),
                         ),
                         IconButton(
-                          isSelected:
-                              widget.viewmodel.loopMode == LoopMode.all
-                                  ? true
-                                  : false,
-                          selectedIcon: Icon(Icons.loop_outlined),
+                          isSelected: widget.viewmodel.loopMode == LoopMode.all
+                              ? true
+                              : false,
+                          selectedIcon: Icon(Icons.loop),
                           onPressed: () => widget.viewmodel.switchLoopMode(),
-                          icon: Icon(Icons.loop_outlined, color: Colors.grey),
+                          icon: Icon(Icons.loop),
                         ),
                       ],
                     ),
@@ -143,41 +128,32 @@ class _TrackState extends State<Track> {
                               ),
                             );
                           },
-                          icon: Icon(Icons.volume_up_outlined),
+                          icon: Icon(Icons.volume_up_sharp),
                         ),
                         Expanded(
                           child: Slider(
                             value: widget.viewmodel.volume,
-                            onChanged:
-                                (volume) =>
-                                    widget.viewmodel.setTargetVolume(volume),
-                            // onChanged: (value) => widget.viewmodel.volume = value,
+                            onChanged: (volume) =>
+                                widget.viewmodel.setTargetVolume(volume),
                           ),
                         ),
-                        Expanded(
-                          child: SegmentedButton(
-                            emptySelectionAllowed: true,
-                            multiSelectionEnabled: true,
-                            segments: <ButtonSegment<Faders>>[
-                              ButtonSegment<Faders>(
-                                value: Faders.start,
-                                label: Text(
-                                  "Fade IN",
-                                  textScaler: TextScaler.linear(0.3),
-                                ),
-                              ),
-                              ButtonSegment<Faders>(
-                                value: Faders.end,
-                                label: Text(
-                                  "Fade OUT",
-                                  textScaler: TextScaler.linear(0.3),
-                                ),
-                              ),
-                            ],
-                            selected: widget.viewmodel.faders,
-                            onSelectionChanged:
-                                (values) => widget.viewmodel.setFaders(values),
-                          ),
+                        SegmentedButton(
+                          showSelectedIcon: false,
+                          emptySelectionAllowed: true,
+                          multiSelectionEnabled: true,
+                          segments: <ButtonSegment<Faders>>[
+                            ButtonSegment<Faders>(
+                              value: Faders.start,
+                              label: Text("In"),
+                            ),
+                            ButtonSegment<Faders>(
+                              value: Faders.end,
+                              label: Text("Out"),
+                            ),
+                          ],
+                          selected: widget.viewmodel.faders,
+                          onSelectionChanged: (values) =>
+                              widget.viewmodel.setFaders(values),
                         ),
                       ],
                     ),

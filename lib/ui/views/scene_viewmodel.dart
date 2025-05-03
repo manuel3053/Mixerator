@@ -7,10 +7,10 @@ import 'package:mixerator/ui/views/track_viewmodel.dart';
 import 'package:mixerator/utils/command.dart';
 import 'package:mixerator/utils/result.dart';
 
-class SceneViewmodel extends ChangeNotifier {
+class HomeViewmodel extends ChangeNotifier {
   final Set<TrackViewmodel> tracks = {};
 
-  SceneViewmodel() {
+  HomeViewmodel() {
     tracks.add(TrackViewmodel());
   }
 

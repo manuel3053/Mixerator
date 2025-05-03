@@ -39,7 +39,10 @@ class TrackViewmodel extends ChangeNotifier {
     // _fade();
   }
 
-  get name => _track!.path.substring(_track!.path.lastIndexOf('/') + 1);
+  get name => _track!.path
+      .substring(_track!.path.lastIndexOf('/') + 1)
+      .split('.')
+      .first;
   get loopMode => _audioPlayer.loopMode;
   get playing => _audioPlayer.playing;
   get position => _audioPlayer.position.inSeconds.toDouble();
