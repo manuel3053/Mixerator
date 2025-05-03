@@ -18,6 +18,12 @@ class _TrackState extends State<Track> {
   }
 
   @override
+  void dispose() {
+    widget.viewmodel.stop();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(

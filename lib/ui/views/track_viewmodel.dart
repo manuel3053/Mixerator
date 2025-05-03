@@ -22,8 +22,8 @@ class TrackViewmodel extends ChangeNotifier {
   late StreamSubscription _streamSubscription;
   final FaderStrategyContext _faderStrategyContext;
   final Set<Faders> _faders = {};
-  PlayMode _playMode;
-  TimelineMode _timelineMode;
+  final PlayMode _playMode;
+  final TimelineMode _timelineMode;
 
   late Command0 selectFile;
 
@@ -88,6 +88,10 @@ class TrackViewmodel extends ChangeNotifier {
       _audioPlayer.play();
     }
     notifyListeners();
+  }
+
+  void stop() {
+    _audioPlayer.stop();
   }
 
   void setVolume(double volume) {

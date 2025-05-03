@@ -23,10 +23,4 @@ class HomeViewmodel extends ChangeNotifier {
     tracks.remove(tracks.elementAt(index));
     notifyListeners();
   }
-
-  void switchAutoTracks() {
-    for (TrackViewmodel t in tracks) {
-      t.switchTrackStatus();
-    }
-  }
 }

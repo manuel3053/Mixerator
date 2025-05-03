@@ -3,8 +3,6 @@ import 'package:mixerator/ui/views/scene_viewmodel.dart';
 import 'package:mixerator/ui/widgets/track.dart';
 
 class Homepage extends StatefulWidget {
-  // final HomepageViewmodel viewModel;
-  // Il viewmodel della traccia è presente temporaneamente per testing, andrà poi spostato nel widget della traccia
   final HomeViewmodel viewmodel;
   const Homepage({super.key, required this.viewmodel});
 
@@ -33,8 +31,10 @@ class _HomepageState extends State<Homepage> {
                       itemCount: widget.viewmodel.tracks.length,
                       itemBuilder: (_, index) {
                         return Dismissible(
-                          key: UniqueKey(),
-                          // key: ValueKey(index),
+                          // key: UniqueKey(),
+                          key: ValueKey(
+                            widget.viewmodel.tracks.elementAt(index),
+                          ),
                           onDismissed: (_) =>
                               widget.viewmodel.removeTrackAt(index),
                           child: Padding(
