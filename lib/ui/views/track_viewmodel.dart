@@ -19,10 +19,9 @@ enum TrackStatus { play, pause }
 class TrackViewmodel extends ChangeNotifier {
   late File? _track;
   final AudioPlayer _audioPlayer;
+  late StreamSubscription _streamSubscription;
   final FaderStrategyContext _faderStrategyContext;
-  StreamController _faderStreamController;
-  late StreamSubscription _faderStreamSubscription;
-  final Set<Faders> _faders = {Faders.start, Faders.end};
+  final Set<Faders> _faders = {};
   PlayMode _playMode;
   TimelineMode _timelineMode;
 
@@ -32,11 +31,13 @@ class TrackViewmodel extends ChangeNotifier {
     : _audioPlayer = AudioPlayer(),
       _playMode = PlayMode.auto,
       _faderStrategyContext = FaderStrategyContext(),
-      _faderStreamController = StreamController(),
       _timelineMode = TimelineMode.global {
     selectFile = Command0(_selectFile);
-    _faderStrategyContext.setTargetVolume(1.0);
-    // _fade();
+    _streamSubscription = _faderStrategyContext
+        .executeFaderStrategy()
+        .stream
+        .listen((vol) => setVolume(vol));
+    setFaders(_faders);
   }
 
   get name => _track!.path
@@ -64,24 +65,19 @@ class TrackViewmodel extends ChangeNotifier {
     _faders.clear();
     _faders.addAll(faders);
     if (faders.contains(Faders.start) && faders.contains(Faders.end)) {
-      _faderStrategyContext.setFaderStrategy(FadeInOut());
+      _faderStrategyContext.setFaderStrategy(FadeInOut(_audioPlayer));
     } else if (faders.contains(Faders.start) && !faders.contains(Faders.end)) {
-      _faderStrategyContext.setFaderStrategy(FadeIn());
+      _faderStrategyContext.setFaderStrategy(FadeIn(_audioPlayer));
     } else if (!faders.contains(Faders.start) && faders.contains(Faders.end)) {
-      _faderStrategyContext.setFaderStrategy(FadeOut());
+      _faderStrategyContext.setFaderStrategy(FadeOut(_audioPlayer));
     } else {
       _faderStrategyContext.setFaderStrategy(NoFade());
     }
-    _faderStreamSubscription.cancel();
-    _faderStreamController.close();
-    _faderStreamController = StreamController();
-    _faderStreamController.addStream(
-      _faderStrategyContext.executeFaderStrategy(_audioPlayer),
-    );
-    _faderStreamSubscription = _faderStreamController.stream.listen(
-      (vol) => setVolume(vol),
-    );
-
+    _streamSubscription.cancel();
+    _streamSubscription = _faderStrategyContext
+        .executeFaderStrategy()
+        .stream
+        .listen((vol) => setVolume(vol));
     notifyListeners();
   }
 
@@ -90,14 +86,6 @@ class TrackViewmodel extends ChangeNotifier {
       _audioPlayer.pause();
     } else {
       _audioPlayer.play();
-      if (!_faderStreamController.hasListener) {
-        _faderStreamController.addStream(
-          _faderStrategyContext.executeFaderStrategy(_audioPlayer),
-        );
-        _faderStreamSubscription = _faderStreamController.stream.listen(
-          (vol) => setVolume(vol),
-        );
-      }
     }
     notifyListeners();
   }
@@ -119,26 +107,6 @@ class TrackViewmodel extends ChangeNotifier {
         _audioPlayer.setLoopMode(LoopMode.off);
       case LoopMode.off:
         _audioPlayer.setLoopMode(LoopMode.all);
-    }
-    notifyListeners();
-  }
-
-  void switchTimelineMode() {
-    switch (_timelineMode) {
-      case TimelineMode.global:
-        _timelineMode = TimelineMode.local;
-      case TimelineMode.local:
-        _timelineMode = TimelineMode.global;
-    }
-    notifyListeners();
-  }
-
-  void switchPlayMode() {
-    switch (_playMode) {
-      case PlayMode.auto:
-        _playMode = PlayMode.manual;
-      case PlayMode.manual:
-        _playMode = PlayMode.auto;
     }
     notifyListeners();
   }
