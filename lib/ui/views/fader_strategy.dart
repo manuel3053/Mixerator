@@ -7,7 +7,6 @@ class FaderStrategyContext {
   // StreamSubscription: StreamController
   late FaderStrategy _faderStrategy;
   StreamController _faderStreamController;
-  late StreamSubscription _faderStreamSubscription;
   double _targetVolume;
 
   FaderStrategyContext()

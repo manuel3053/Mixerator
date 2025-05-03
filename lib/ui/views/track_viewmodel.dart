@@ -101,6 +101,9 @@ class TrackViewmodel extends ChangeNotifier {
 
   void setTargetVolume(double volume) {
     // _audioPlayer.setVolume(volume);
+    if (!_audioPlayer.playing) {
+      setVolume(volume);
+    }
     _faderStrategyContext.setTargetVolume(volume);
     notifyListeners();
   }
