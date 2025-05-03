@@ -5,30 +5,27 @@ import 'package:async/async.dart';
 
 class FaderStrategyContext {
   // StreamSubscription: StreamController
-  late FaderStrategy _faderStrategy;
+  FaderStrategy? _faderStrategy;
   StreamController _faderStreamController;
   double _targetVolume;
 
   FaderStrategyContext()
-    : _faderStrategy = NoFade(),
-      _targetVolume = 1.0,
-      _faderStreamController = StreamController() {
-    _faderStrategy.setTargetVolume(_targetVolume);
-  }
+    : _targetVolume = 1.0,
+      _faderStreamController = StreamController();
 
   void setTargetVolume(double volume) {
     _targetVolume = volume;
-    _faderStrategy.setTargetVolume(_targetVolume);
+    _faderStrategy!.setTargetVolume(_targetVolume);
   }
 
   void setFaderStrategy(FaderStrategy faderStrategy) {
     _faderStrategy = faderStrategy;
-    _faderStrategy.setTargetVolume(_targetVolume);
+    _faderStrategy!.setTargetVolume(_targetVolume);
   }
 
   StreamController executeFaderStrategy() {
     // _faderStreamController.close();
-    _faderStreamController = _faderStrategy.execute();
+    _faderStreamController = _faderStrategy!.execute();
     return _faderStreamController;
   }
 }
@@ -153,10 +150,16 @@ class FadeInOut extends FaderStrategy {
 }
 
 class NoFade extends FaderStrategy {
+  final AudioPlayer _audioPlayer;
+
+  NoFade(AudioPlayer audioPlayer) : _audioPlayer = audioPlayer;
+
   @override
   StreamController execute() {
     // CONSTANT VOLUME
-    Stream<double> constant = Stream.value(_volume);
+    Stream<double> constant = _audioPlayer.positionStream.map(
+      (time) => _volume,
+    );
     StreamController streamController = StreamController();
     streamController.addStream(constant);
 

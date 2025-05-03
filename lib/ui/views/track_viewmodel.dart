@@ -33,6 +33,7 @@ class TrackViewmodel extends ChangeNotifier {
       _faderStrategyContext = FaderStrategyContext(),
       _timelineMode = TimelineMode.global {
     selectFile = Command0(_selectFile);
+    _faderStrategyContext.setFaderStrategy(NoFade(_audioPlayer));
     _streamSubscription = _faderStrategyContext
         .executeFaderStrategy()
         .stream
@@ -71,7 +72,7 @@ class TrackViewmodel extends ChangeNotifier {
     } else if (!faders.contains(Faders.start) && faders.contains(Faders.end)) {
       _faderStrategyContext.setFaderStrategy(FadeOut(_audioPlayer));
     } else {
-      _faderStrategyContext.setFaderStrategy(NoFade());
+      _faderStrategyContext.setFaderStrategy(NoFade(_audioPlayer));
     }
     _streamSubscription.cancel();
     _streamSubscription = _faderStrategyContext
